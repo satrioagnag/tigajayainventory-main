@@ -369,6 +369,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                         <span class="input-group-text">Rp</span>
                                         <input type="number" name="diskon" id="diskon" class="form-control" value="0" min="0" oninput="hitungTotal()">
                                     </div>
+                                    <label class="form-label">Persentase Diskon</label>
+                                    <div class="input-group">
+                                        <input type="number" name="diskon_percent" id="disc_perc" class="form-control" value="0" min="0", oninput="">
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Metode Pembayaran</label>
