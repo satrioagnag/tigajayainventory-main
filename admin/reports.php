@@ -220,6 +220,16 @@ while ($row = $result_chart->fetch_assoc()) {
             </div>
         </div>
 
+        <!-- Grafik Stok -->
+        <div class="card card-report mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Distribusi Stok per Kategori</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="stockChart" height="100"></canvas>
+            </div>
+        </div>
+
         <!-- Filter dan Pencarian -->
         <div class="card card-report mb-4">
             <div class="card-header bg-light">
@@ -228,6 +238,9 @@ while ($row = $result_chart->fetch_assoc()) {
                         <div class="search-box">
                             <i class="bi bi-search"></i>
                             <input type="text" class="form-control" id="searchInput" placeholder="Cari produk...">
+                        </div>
+                        <div class="">
+
                         </div>
                     </div>
                     <div class="col-md-6 text-end export-buttons">
@@ -245,21 +258,10 @@ while ($row = $result_chart->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Grafik Stok -->
-        <div class="card card-report mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Distribusi Stok per Kategori</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="stockChart" height="100"></canvas>
-            </div>
-        </div>
-
         <!-- Tabel Laporan -->
         <div class="card card-report">
             <div class="card-header bg-light">
                 <h5 class="mb-0"><i class="bi bi-table"></i> Detail Stok Produk</h5>
-            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover" id="stockTable">
