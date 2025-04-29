@@ -316,6 +316,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 $harga_formatted = number_format($row['harga'], 0, ',', '.');
                             ?>
                                 <a href="#" class="list-group-item list-group-item-action product-card" 
+                                   data-id="<?php echo $row['id']; ?>"
                                    onclick="selectProduct(<?php echo $row['id']; ?>, <?php echo $row['harga']; ?>, '<?php echo htmlspecialchars($row['nama']); ?>')">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -369,12 +370,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                         <span class="input-group-text">Rp</span>
                                         <input type="number" name="diskon" id="diskon" class="form-control" value="0" min="0" oninput="hitungTotal()">
                                     </div>
-                                    <label class="form-label">Persentase Diskon</label>
-                                    <div class="input-group">
-                                        <input type="number" name="diskon_percent" id="disc_perc" class="form-control" value="0" min="0", oninput="">
-                                    </div>
                                 </div>
                                 <div class="col-md-6">
+                                <label class="form-label">Persentase Diskon</label>
+                                    <div class="input-group">
+                                        <input type="number" name="diskon_percent" id="disc_percent" class="form-control" value="0" min="0", oninput="">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                <div>
                                     <label class="form-label">Metode Pembayaran</label>
                                     <select class="form-select" name="metode_pembayaran" required>
                                         <option value="Cash">Cash</option>
@@ -513,12 +517,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             
             // Update tampilan produk terpilih
             const productCards = document.querySelectorAll('.product-card');
-            productCards.forEach(card => {
-                card.classList.remove('selected');
-                if (card.getAttribute('onclick').includes(id)) {
-                    card.classList.add('selected');
-                }
-            });
+                productCards.forEach(card => {
+                    card.classList.remove('selected');
+                    if (parseInt(card.getAttribute('data-id')) === id) {
+                        card.classList.add('selected');
+                    }
+                });
+
             
             hitungTotal();
         }
@@ -528,6 +533,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
             const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
             const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+            const diskon_percent = parseInt(document.getElementById('diskon_percent').value) || 0;
             
             const total = (harga * jumlah) - diskon;
             document.getElementById('total_harga').value = total.toLocaleString('id-ID');
