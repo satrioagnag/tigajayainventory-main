@@ -254,8 +254,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-cart-plus"></i> Transaksi Penjualan</h2>
-            <div class="text-muted">
-                <?php echo date('d/m/Y H:i:s'); ?>
+            <div class="text-muted" id="realtime-clock">
             </div>
         </div>
 
@@ -374,7 +373,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 <div class="col-md-6">
                                 <label class="form-label">Persentase Diskon</label>
                                     <div class="input-group">
-                                        <input type="number" name="diskon_percent" id="disc_percent" class="form-control" value="0" min="0", oninput="">
+                                        <input type="number" name="diskon_percent" id="diskon_percent" class="form-control" value="0" min="0", oninput="">
                                         <span class="input-group-text">%</span>
                                     </div>
                                 </div>
@@ -528,15 +527,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             hitungTotal();
         }
         
-        // Fungsi untuk menghitung total harga
-        function hitungTotal() {
+        //eventListner untuk sync diskon
+        document.getElementById('diskon').addEventListener('input', function() {
+            syncDiskonToPercent();
+            hitungTotal();
+        });
+        document.getElementById('diskon_percent').addEventListener('input', function() {
+            syncPercentToDiskon();
+            hitungTotal();
+        });
+        document.getElementById('harga_satuan').addEventListener('input', hitungTotal);
+        document.getElementById('jumlah').addEventListener('input', hitungTotal);
+
+        function syncDiskonToPercent() {
             const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
             const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
             const diskon = parseFloat(document.getElementById('diskon').value) || 0;
-            const diskon_percent = parseInt(document.getElementById('diskon_percent').value) || 0;
-            
-            const total = (harga * jumlah) - diskon;
-            document.getElementById('total_harga').value = total.toLocaleString('id-ID');
+            const subtotal = harga * jumlah;
+
+            const diskon_percent = subtotal > 0 ? (diskon / subtotal) * 100 : 0;
+            document.getElementById('diskon_percent').value = Math.round(diskon_percent);
+        }
+
+        function syncPercentToDiskon() {
+            const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
+            const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+            const diskon_percent = parseFloat(document.getElementById('diskon_percent').value) || 0;
+            const subtotal = harga * jumlah;
+
+            const diskon = (diskon_percent / 100) * subtotal;
+            document.getElementById('diskon').value = Math.round(diskon);
+        }
+
+        // Fungsi untuk menghitung total harga
+        function hitungTotal() {
+                const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
+                const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+                const subtotal = harga * jumlah;
+                const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+
+                const total = subtotal - diskon;
+                document.getElementById('total_harga').value = total.toLocaleString('id-ID');
             
             hitungKembalian();
         }
@@ -623,6 +654,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                 }
             }
         });
+
+        //clock real time
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            };
+            const formatted = now.toLocaleString('id-ID', options).replace(',', '');
+            document.getElementById('realtime-clock').textContent = formatted;
+        }
+
+        setInterval(updateClock, 1000); // Update every second
+        updateClock(); // Run once immediately
+
     </script>
 </body>
 </html>
