@@ -91,6 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reduce_stock'])) {
     <title>Kelola Stok Gudang</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <style>
         .card-counter {
             box-shadow: 2px 2px 10px #DADADA;
@@ -228,7 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reduce_stock'])) {
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label">Produk</label>
-                                <select class="form-select" name="product_id" required>
+                                <select class="form-select selectpicker" name="product_id" data-live-search="true" required>
                                     <?php
                                     $product_query = "SELECT id, nama, stok FROM tbl_produk";
                                     $product_result = $conn->query($product_query);
@@ -261,8 +262,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reduce_stock'])) {
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label">Produk</label>
-                                <select class="form-select" name="product_id" required>
+                                <select class="form-select selectpicker" name="product_id" data-live-search="true" required>
                                     <?php
+                                    $product_query = "SELECT id, nama, stok FROM tbl_produk";
                                     $product_result = $conn->query($product_query);
                                     while ($row = $product_result->fetch_assoc()): ?>
                                         <option value="<?php echo $row['id']; ?>">
@@ -346,5 +348,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reduce_stock'])) {
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
 </body>
 </html>
