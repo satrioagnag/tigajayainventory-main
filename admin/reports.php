@@ -69,7 +69,7 @@ while ($row = $result_chart->fetch_assoc()) {
     $chart_labels[] = $row['kategori'];
     $chart_data[] = $row['total_stok'];
     $chart_jumlah_produk[] = $row['jumlah_produk'];
-    
+
     // Gunakan warna yang sudah ditentukan
     $chart_bg_color[] = $colors[$color_index % count($colors)];
     $chart_border_color[] = str_replace('0.7', '1', $colors[$color_index % count($colors)]);
@@ -78,12 +78,14 @@ while ($row = $result_chart->fetch_assoc()) {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Stok - Inventory System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .card-report {
@@ -92,50 +94,60 @@ while ($row = $result_chart->fetch_assoc()) {
             transition: all 0.3s ease;
             margin-bottom: 20px;
         }
+
         .card-report:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
+
         .stock-low {
             background-color: #fff8f8;
         }
+
         .stock-out {
             background-color: #ffebee;
         }
+
         .search-box {
             position: relative;
         }
+
         .search-box .form-control {
             padding-left: 40px;
         }
+
         .search-box i {
             position: absolute;
             left: 15px;
             top: 12px;
             color: #6c757d;
         }
+
         .progress-thin {
             height: 5px;
         }
+
         .export-buttons .btn {
             margin-right: 5px;
             margin-bottom: 5px;
         }
+
         .stat-card {
             color: white;
             padding: 15px;
             border-radius: 8px;
             height: 100%;
         }
+
         .stat-card i {
             font-size: 2rem;
             opacity: 0.8;
         }
     </style>
 
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
         <div class="container-fluid">
@@ -149,7 +161,8 @@ while ($row = $result_chart->fetch_assoc()) {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <span class="nav-link text-white">
-                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Admin'); ?>
+                            <i class="bi bi-person-circle"></i>
+                            <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Admin'); ?>
                         </span>
                     </li>
                     <li class="nav-item">
@@ -227,230 +240,226 @@ while ($row = $result_chart->fetch_assoc()) {
         <div class="card card-report mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Distribusi Stok per Kategori</h5>
+                <input type="text" class="form-control" id="searchInput" placeholder="Cari produk...">
             </div>
             <div class="card-body">
                 <canvas id="stockChart" height="100"></canvas>
             </div>
         </div>
 
-        <!-- Filter dan Pencarian -->
-        <div class="card card-report mb-4">
-            <div class="card-header bg-light">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="search-box">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Cari produk...">
-                        </div>
-                        <div class="">
-
-                        </div>
-                    </div>
-                    <div class="col-md-6 text-end export-buttons">
-                        <button class="btn btn-outline-primary" onclick="printReport()">
-                            <i class="bi bi-printer"></i> Cetak
-                        </button>
-                        <button class="btn btn-outline-success" onclick="exportToExcel()">
-                            <i class="bi bi-file-excel"></i> Excel
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="exportToPDF()">
-                            <i class="bi bi-file-earmark-pdf"></i> PDF
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Tabel Laporan -->
         <div class="card card-report">
             <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-table"></i> Detail Stok Produk</h5>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="stockTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="5%">ID</th>
-                                <th width="20%">Nama Produk</th>
-                                <th width="15%">Merek</th>
-                                <th width="15%">Kategori</th>
-                                <th width="15%">Harga</th>
-                                <th width="10%">Stok</th>
-                                <th width="10%">Min. Stok</th>
-                                <th width="10%">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $result_stok->data_seek(0); // Reset pointer hasil query
-                            while ($row = $result_stok->fetch_assoc()): 
-                                $stock_class = '';
-                                $stock_status = 'Aman';
-                                $percentage = ($row['stok'] / ($row['min_stok'] > 0 ? $row['min_stok'] : 1)) * 100;
-                                
-                                if ($row['stok'] <= 0) {
-                                    $stock_class = 'stock-out';
-                                    $stock_status = 'Habis';
-                                } elseif ($row['stok'] <= $row['min_stok']) {
-                                    $stock_class = 'stock-low';
-                                    $stock_status = 'Rendah';
-                                }
-                            ?>
-                                <tr class="<?php echo $stock_class; ?>">
-                                    <td><?php echo $row['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($row['nama']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['merek']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['kategori']); ?></td>
-                                    <td>Rp<?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
-                                    <td><?php echo $row['stok']; ?></td>
-                                    <td><?php echo $row['min_stok']; ?></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <?php if($stock_status == 'Aman'): ?>
-                                                <span class="badge bg-success me-2"><?php echo $stock_status; ?></span>
-                                            <?php elseif($stock_status == 'Rendah'): ?>
-                                                <span class="badge bg-warning me-2"><?php echo $stock_status; ?></span>
-                                            <?php else: ?>
-                                                <span class="badge bg-danger me-2"><?php echo $stock_status; ?></span>
-                                            <?php endif; ?>
-                                            <div class="progress progress-thin w-100">
-                                                <div class="progress-bar 
-                                                    <?php echo $stock_status == 'Habis' ? 'bg-danger' : ($stock_status == 'Rendah' ? 'bg-warning' : 'bg-success'); ?>" 
-                                                    role="progressbar" 
-                                                    style="width: <?php echo min($percentage, 100); ?>%" 
-                                                    aria-valuenow="<?php echo $percentage; ?>" 
-                                                    aria-valuemin="0" 
-                                                    aria-valuemax="100">
+                <div class="row align-items-center mb-3">
+                    <!-- Judul -->
+                    <div class="col-md-6">
+                        <h5 class="mb-0"><i class="bi bi-table"></i> Detail Stok Produk</h5>
+                    </div>
+
+                    <!-- Tombol Export -->
+                    <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+                        <div>
+                            <button class="btn btn-outline-primary" onclick="printReport()">
+                                <i class="bi bi-printer"></i> Cetak
+                            </button>
+                            <button class="btn btn-outline-success" onclick="exportToExcel()">
+                                <i class="bi bi-file-excel"></i> Excel
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="exportToPDF()">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="stockTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="20%">Nama Produk</th>
+                                    <th width="15%">Merek</th>
+                                    <th width="15%">Kategori</th>
+                                    <th width="15%">Harga</th>
+                                    <th width="10%">Stok</th>
+                                    <th width="10%">Min. Stok</th>
+                                    <th width="10%">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $result_stok->data_seek(0); // Reset pointer hasil query
+                                while ($row = $result_stok->fetch_assoc()):
+                                    $stock_class = '';
+                                    $stock_status = 'Aman';
+                                    $percentage = ($row['stok'] / ($row['min_stok'] > 0 ? $row['min_stok'] : 1)) * 100;
+
+                                    if ($row['stok'] <= 0) {
+                                        $stock_class = 'stock-out';
+                                        $stock_status = 'Habis';
+                                    } elseif ($row['stok'] <= $row['min_stok']) {
+                                        $stock_class = 'stock-low';
+                                        $stock_status = 'Rendah';
+                                    }
+                                    ?>
+                                    <tr class="<?php echo $stock_class; ?>">
+                                        <td><?php echo $row['id']; ?></td>
+                                        <td><?php echo htmlspecialchars($row['nama']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['merek']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['kategori']); ?></td>
+                                        <td>Rp<?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
+                                        <td><?php echo $row['stok']; ?></td>
+                                        <td><?php echo $row['min_stok']; ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <?php if ($stock_status == 'Aman'): ?>
+                                                    <span class="badge bg-success me-2"><?php echo $stock_status; ?></span>
+                                                <?php elseif ($stock_status == 'Rendah'): ?>
+                                                    <span class="badge bg-warning me-2"><?php echo $stock_status; ?></span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-danger me-2"><?php echo $stock_status; ?></span>
+                                                <?php endif; ?>
+                                                <div class="progress progress-thin w-100">
+                                                    <div class="progress-bar 
+                                                    <?php echo $stock_status == 'Habis' ? 'bg-danger' : ($stock_status == 'Rendah' ? 'bg-warning' : 'bg-success'); ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo min($percentage, 100); ?>%"
+                                                        aria-valuenow="<?php echo $percentage; ?>" aria-valuemin="0"
+                                                        aria-valuemax="100">
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Fungsi pencarian
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const input = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#stockTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+        <script>
+            // Fungsi pencarian
+            document.getElementById('searchInput').addEventListener('keyup', function () {
+                const input = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#stockTable tbody tr');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(input) ? '' : 'none';
+                });
             });
-        });
 
-        // Fungsi logout
-        function logout() {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.href = "../index.html";
+            // Fungsi logout
+            function logout() {
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
             }
-        }
 
-        // Fungsi ekspor
-        function printReport() {
-            window.print();
-        }
+            // Fungsi ekspor
+            function printReport() {
+                window.print();
+            }
 
-        function exportToExcel() {
-            // Implementasi ekspor ke Excel bisa menggunakan library seperti SheetJS
-            alert('Fitur ekspor ke Excel akan diimplementasikan');
-        }
+            function exportToExcel() {
+                // Implementasi ekspor ke Excel bisa menggunakan library seperti SheetJS
+                alert('Fitur ekspor ke Excel akan diimplementasikan');
+            }
 
-        function exportToPDF() {
-            // Implementasi ekspor ke PDF bisa menggunakan library seperti jsPDF
-            alert('Fitur ekspor ke PDF akan diimplementasikan');
-        }
+            function exportToPDF() {
+                // Implementasi ekspor ke PDF bisa menggunakan library seperti jsPDF
+                alert('Fitur ekspor ke PDF akan diimplementasikan');
+            }
 
-        // Grafik Stok
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('stockChart').getContext('2d');
-            
-            const stockChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: <?php echo json_encode($chart_labels); ?>,
-                    datasets: [{
-                        label: 'Total Stok',
-                        data: <?php echo json_encode($chart_data); ?>,
-                        backgroundColor: <?php echo json_encode($chart_bg_color); ?>,
-                        borderColor: <?php echo json_encode($chart_border_color); ?>,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
+            // Grafik Stok
+            document.addEventListener('DOMContentLoaded', function () {
+                const ctx = document.getElementById('stockChart').getContext('2d');
+
+                const stockChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: <?php echo json_encode($chart_labels); ?>,
+                        datasets: [{
+                            label: 'Total Stok',
+                            data: <?php echo json_encode($chart_data); ?>,
+                            backgroundColor: <?php echo json_encode($chart_bg_color); ?>,
+                            borderColor: <?php echo json_encode($chart_border_color); ?>,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Distribusi Stok per Kategori'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function (context) {
+                                        const index = context.dataIndex;
+                                        const jumlahProduk = <?php echo json_encode($chart_jumlah_produk); ?>;
+                                        return 'Jumlah Produk: ' + jumlahProduk[index];
+                                    }
+                                }
+                            }
                         },
-                        title: {
-                            display: true,
-                            text: 'Distribusi Stok per Kategori'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: function(context) {
-                                    const index = context.dataIndex;
-                                    const jumlahProduk = <?php echo json_encode($chart_jumlah_produk); ?>;
-                                    return 'Jumlah Produk: ' + jumlahProduk[index];
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Stok'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Kategori Produk'
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Jumlah Stok'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Kategori Produk'
-                            }
-                        }
                     }
-                }
+                });
             });
-        });
-        
-        $(document).ready(function() {
-    $('#stockTable').DataTable({
-        "ordering": true,
-        "paging": true,
-        "info": true,
-        "language": {
-            "search": "Cari:",
-            "lengthMenu": "Tampilkan _MENU_ data per halaman",
-            "zeroRecords": "Tidak ada data ditemukan",
-            "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            "infoEmpty": "Menampilkan 0 sampai 0 dari 0 data",
-            "paginate": {
-                "first": "Pertama",
-                "last": "Terakhir",
-                "next": "Berikutnya",
-                "previous": "Sebelumnya"
-            }
-        }
-    });
-});
+        </script>
+        <script>
+            $(document).ready(function () {
+                $('#stockTable').DataTable({
+                    "language": {
+                        "search": "Cari:",
+                        "lengthMenu": "Tampilkan _MENU_ entri",
+                        "info": "Menampilkan _START_ hingga _END_ dari _TOTAL_ entri",
+                        "paginate": {
+                            "first": "Awal",
+                            "last": "Akhir",
+                            "next": "Berikutnya",
+                            "previous": "Sebelumnya"
+                        },
+                        "zeroRecords": "Tidak ada data yang cocok",
+                        "infoEmpty": "Tidak ada data tersedia",
+                        "infoFiltered": "(difilter dari total _MAX_ entri)"
+                    }
+                });
 
-    </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+                // Nonaktifkan pencarian manual karena sudah ada dari DataTables
+                document.getElementById('searchInput').style.display = 'none';
+            });
+        </script>
+
 
 </body>
+
 </html>
