@@ -101,6 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -116,57 +117,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
         }
-        
+
         body {
             background-color: #f8f9fa;
         }
-        
+
         .kasir-nav {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
-        
+
         .card-kasir {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             border: none;
         }
-        
+
         .card-kasir:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         .product-card {
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
+
         .product-card:hover {
             background-color: #f0f8ff;
             transform: scale(1.02);
         }
-        
+
         .product-card.selected {
             background-color: #e3f2fd;
             border-left: 4px solid var(--accent-color);
         }
-        
+
         .search-box {
             position: relative;
         }
-        
+
         .search-box .form-control {
             padding-left: 40px;
         }
-        
+
         .search-box i {
             position: absolute;
             left: 15px;
             top: 12px;
             color: #6c757d;
         }
-        
+
         .receipt-container {
             display: none;
             max-width: 400px;
@@ -175,51 +176,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             background-color: white;
             padding: 20px;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .receipt-header {
             text-align: center;
             margin-bottom: 15px;
         }
-        
+
         .receipt-header h3 {
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .receipt-header p {
             font-size: 0.8rem;
             margin-bottom: 0;
         }
-        
+
         .receipt-line {
             display: flex;
             justify-content: space-between;
             margin-bottom: 5px;
         }
-        
+
         .receipt-divider {
             border-top: 1px dashed #000;
             margin: 10px 0;
         }
-        
+
         .btn-print {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .btn-print:hover {
             background-color: var(--secondary-color);
             color: white;
         }
-        
+
         .badge-stock {
             font-size: 0.7rem;
             padding: 3px 6px;
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark kasir-nav">
         <div class="container-fluid">
@@ -233,7 +235,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <span class="nav-link text-white">
-                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Kasir'); ?>
+                            <i class="bi bi-person-circle"></i>
+                            <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Kasir'); ?>
                         </span>
                     </li>
                     <li class="nav-item">
@@ -266,7 +269,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
             </div>
             <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
-        
+
         <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger alert-dismissible fade show">
                 <i class="bi bi-exclamation-triangle"></i> <?php echo $_SESSION['error']; ?>
@@ -289,10 +292,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 <div class="col-md-5">
                                     <select class="form-select" name="kategori_id" onchange="this.form.submit()">
                                         <option value="">Semua Kategori</option>
-                                        <?php 
+                                        <?php
                                         $kategori_result->data_seek(0);
                                         while ($kat = $kategori_result->fetch_assoc()): ?>
-                                            <option value="<?php echo $kat['id']; ?>" <?php if (isset($_GET['kategori_id']) && $_GET['kategori_id'] == $kat['id']) echo "selected"; ?>>
+                                            <option value="<?php echo $kat['id']; ?>" <?php if (isset($_GET['kategori_id']) && $_GET['kategori_id'] == $kat['id'])
+                                                   echo "selected"; ?>>
                                                 <?php echo htmlspecialchars($kat['nama']); ?>
                                             </option>
                                         <?php endwhile; ?>
@@ -301,7 +305,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 <div class="col-md-7">
                                     <div class="search-box">
                                         <i class="bi bi-search"></i>
-                                        <input type="text" name="search" class="form-control" placeholder="Cari produk..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                                        <input type="text" name="search" class="form-control"
+                                            placeholder="Cari produk..."
+                                            value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                                     </div>
                                 </div>
                             </div>
@@ -309,22 +315,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
 
                         <!-- Daftar Produk -->
                         <div class="list-group" style="max-height: 400px; overflow-y: auto;">
-                            <?php 
+                            <?php
                             $produk_result->data_seek(0);
-                            while ($row = $produk_result->fetch_assoc()): 
+                            while ($row = $produk_result->fetch_assoc()):
                                 $harga_formatted = number_format($row['harga'], 0, ',', '.');
-                            ?>
-                                <a href="#" class="list-group-item list-group-item-action product-card" 
-                                   data-id="<?php echo $row['id']; ?>"
-                                   onclick="selectProduct(<?php echo $row['id']; ?>, <?php echo $row['harga']; ?>, '<?php echo htmlspecialchars($row['nama']); ?>')">
+                                ?>
+                                <a href="#" class="list-group-item list-group-item-action product-card"
+                                    data-id="<?php echo $row['id']; ?>"
+                                    onclick="selectProduct(<?php echo $row['id']; ?>, <?php echo $row['harga']; ?>, '<?php echo htmlspecialchars($row['nama']); ?>')">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1"><?php echo htmlspecialchars($row['nama']); ?></h6>
-                                            <small class="text-muted"><?php echo htmlspecialchars($row['kategori']); ?></small>
+                                            <small
+                                                class="text-muted"><?php echo htmlspecialchars($row['kategori']); ?></small>
                                         </div>
                                         <div class="text-end">
                                             <span class="fw-bold">Rp<?php echo $harga_formatted; ?></span>
-                                            <span class="badge bg-success badge-stock">Stok: <?php echo $row['stok']; ?></span>
+                                            <span class="badge bg-success badge-stock">Stok:
+                                                <?php echo $row['stok']; ?></span>
                                         </div>
                                     </div>
                                 </a>
@@ -347,7 +355,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 <input type="text" id="selected_product" class="form-control" readonly>
                                 <input type="hidden" name="produk_id" id="produk_id">
                             </div>
-                            
+
                             <div class="row g-2">
                                 <div class="col-md-6">
                                     <label class="form-label">Harga Satuan</label>
@@ -358,22 +366,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Jumlah</label>
-                                    <input type="number" name="jumlah" id="jumlah" class="form-control" required min="1" value="1" oninput="hitungTotal()">
+                                    <input type="number" name="jumlah" id="jumlah" class="form-control" required min="1"
+                                        value="1" oninput="hitungTotal()">
                                 </div>
                             </div>
-                            
+
                             <div class="row g-2 mt-2">
                                 <div class="col-md-6">
                                     <label class="form-label">Diskon</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="number" name="diskon" id="diskon" class="form-control" value="0" min="0" oninput="hitungTotal()">
+                                        <input type="number" name="diskon" id="diskon" class="form-control" value="0"
+                                            min="0" oninput="hitungTotal()">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                <label class="form-label">Persentase Diskon</label>
+                                    <label class="form-label">Persentase Diskon</label>
                                     <div class="input-group">
-                                        <input type="number" name="diskon_percent" id="diskon_percent" class="form-control" value="0" min="0", oninput="">
+                                        <input type="number" name="diskon_percent" id="diskon_percent"
+                                            class="form-control" value="0" min="0" , oninput="">
                                         <span class="input-group-text">%</span>
                                     </div>
                                 </div>
@@ -387,7 +398,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div class="row g-2 mt-2">
                                 <div class="col-md-6">
                                     <label class="form-label">Total Harga</label>
@@ -400,11 +411,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                     <label class="form-label">Pembayaran</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="number" name="pembayaran" id="pembayaran" class="form-control" required min="0" oninput="hitungKembalian()">
+                                        <input type="number" name="pembayaran" id="pembayaran" class="form-control"
+                                            required min="0" oninput="hitungKembalian()">
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 mt-2">
                                 <label class="form-label">Kembalian</label>
                                 <div class="input-group">
@@ -412,7 +424,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                     <input type="text" id="kembalian" class="form-control" readonly>
                                 </div>
                             </div>
-                            
+
                             <button type="submit" name="checkout" class="btn btn-primary w-100 mt-3">
                                 <i class="bi bi-check-circle"></i> Proses Transaksi
                             </button>
@@ -420,102 +432,142 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- E-Receipt -->
-<?php if (isset($_SESSION['receipt'])): ?>
-    <div class="row">
-        <div class="col-md-12 text-center">
-            <button class="btn btn-print mb-3" onclick="showReceipt()">
-                <i class="bi bi-receipt"></i> Tampilkan Struk
-            </button>
-            
-            <div id="receiptContainer" class="receipt-container">
-                <div class="receipt-header">
-                    <h3>TIGA JAYA MOTOR</h3>
-                    <p>Jl. Erlangga No.6, Katang, Sukorejo, Kec. Ngasem</p>
-                    <p>Kabupaten Kediri, Jawa Timur</p>
-                    <p>Telp: (0354) 123456</p>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="receipt-line">
-                    <span>Kasir:</span>
-                    <span><?php echo htmlspecialchars($_SESSION['receipt']['kasir'] ?? ''); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span>Tanggal:</span>
-                    <span><?php echo htmlspecialchars($_SESSION['receipt']['tanggal'] ?? ''); ?></span>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="receipt-line">
-                    <span><?php echo htmlspecialchars($_SESSION['receipt']['produk'] ?? ''); ?></span>
-                    <span>Rp<?php echo number_format($_SESSION['receipt']['harga_satuan'] ?? 0, 0, ',', '.'); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span><?php echo $_SESSION['receipt']['jumlah'] ?? 0; ?> x</span>
-                    <span>Rp<?php echo number_format(($_SESSION['receipt']['harga_satuan'] ?? 0) * ($_SESSION['receipt']['jumlah'] ?? 0), 0, ',', '.'); ?></span>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="receipt-line">
-                    <span>Subtotal:</span>
-                    <span>Rp<?php echo number_format(($_SESSION['receipt']['harga_satuan'] ?? 0) * ($_SESSION['receipt']['jumlah'] ?? 0), 0, ',', '.'); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span>Diskon:</span>
-                    <span>Rp<?php echo number_format($_SESSION['receipt']['diskon'] ?? 0, 0, ',', '.'); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span><strong>Total:</strong></span>
-                    <span><strong>Rp<?php echo number_format($_SESSION['receipt']['harga_total'] ?? 0, 0, ',', '.'); ?></strong></span>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="receipt-line">
-                    <span>Tunai:</span>
-                    <span>Rp<?php echo number_format($_SESSION['receipt']['pembayaran'] ?? 0, 0, ',', '.'); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span>Kembali:</span>
-                    <span>Rp<?php echo number_format($_SESSION['receipt']['kembalian'] ?? 0, 0, ',', '.'); ?></span>
-                </div>
-                <div class="receipt-line">
-                    <span>Metode:</span>
-                    <span><?php echo htmlspecialchars($_SESSION['receipt']['metode_pembayaran'] ?? ''); ?></span>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="text-center mt-3">
-                    <p>Terima kasih telah berbelanja</p>
-                    <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</p>
+            <!-- Kolom Membership -->
+            <div class="col-md-6 mb-4">
+                <div class="card card-kasir">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-person-vcard"></i> Member
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="transaksiForm">
+                            <div class="mb-3">
+                                <label class="form-label">Nomor HP</label>
+                                <input type="text" name="phone" id="phone" class="form-control" onblur="checkMember()"
+                                    placeholder="Masukkan nomor HP">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Nama Member</label>
+                                <input type="text" id="member_name" class="form-control" readonly>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Total Spend</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" id="total_spent" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Membership Level</label>
+                                    <input type="text" id="membership_level" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="discount_value" name="discount_value">
+                        </form>
+                    </div>
                 </div>
             </div>
-            
-            <button id="printBtn" class="btn btn-print" onclick="printReceipt()" style="display: none;">
-                <i class="bi bi-printer"></i> Cetak Struk
-            </button>
         </div>
-    </div>
-    <?php unset($_SESSION['receipt']); ?>
-<?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Fungsi untuk memilih produk
-        function selectProduct(id, harga, nama) {
-            document.getElementById('produk_id').value = id;
-            document.getElementById('selected_product').value = nama;
-            document.getElementById('harga_satuan').value = harga.toLocaleString('id-ID');
-            
-            // Update tampilan produk terpilih
-            const productCards = document.querySelectorAll('.product-card');
+
+        <!-- E-Receipt -->
+        <?php if (isset($_SESSION['receipt'])): ?>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <button class="btn btn-print mb-3" onclick="showReceipt()">
+                        <i class="bi bi-receipt"></i> Tampilkan Struk
+                    </button>
+
+                    <div id="receiptContainer" class="receipt-container">
+                        <div class="receipt-header">
+                            <h3>TIGA JAYA MOTOR</h3>
+                            <p>Jl. Erlangga No.6, Katang, Sukorejo, Kec. Ngasem</p>
+                            <p>Kabupaten Kediri, Jawa Timur</p>
+                            <p>Telp: (0354) 123456</p>
+                        </div>
+
+                        <div class="receipt-divider"></div>
+
+                        <div class="receipt-line">
+                            <span>Kasir:</span>
+                            <span><?php echo htmlspecialchars($_SESSION['receipt']['kasir'] ?? ''); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Tanggal:</span>
+                            <span><?php echo htmlspecialchars($_SESSION['receipt']['tanggal'] ?? ''); ?></span>
+                        </div>
+
+                        <div class="receipt-divider"></div>
+
+                        <div class="receipt-line">
+                            <span><?php echo htmlspecialchars($_SESSION['receipt']['produk'] ?? ''); ?></span>
+                            <span>Rp<?php echo number_format($_SESSION['receipt']['harga_satuan'] ?? 0, 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span><?php echo $_SESSION['receipt']['jumlah'] ?? 0; ?> x</span>
+                            <span>Rp<?php echo number_format(($_SESSION['receipt']['harga_satuan'] ?? 0) * ($_SESSION['receipt']['jumlah'] ?? 0), 0, ',', '.'); ?></span>
+                        </div>
+
+                        <div class="receipt-divider"></div>
+
+                        <div class="receipt-line">
+                            <span>Subtotal:</span>
+                            <span>Rp<?php echo number_format(($_SESSION['receipt']['harga_satuan'] ?? 0) * ($_SESSION['receipt']['jumlah'] ?? 0), 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Diskon:</span>
+                            <span>Rp<?php echo number_format($_SESSION['receipt']['diskon'] ?? 0, 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span><strong>Total:</strong></span>
+                            <span><strong>Rp<?php echo number_format($_SESSION['receipt']['harga_total'] ?? 0, 0, ',', '.'); ?></strong></span>
+                        </div>
+
+                        <div class="receipt-divider"></div>
+
+                        <div class="receipt-line">
+                            <span>Tunai:</span>
+                            <span>Rp<?php echo number_format($_SESSION['receipt']['pembayaran'] ?? 0, 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Kembali:</span>
+                            <span>Rp<?php echo number_format($_SESSION['receipt']['kembalian'] ?? 0, 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Metode:</span>
+                            <span><?php echo htmlspecialchars($_SESSION['receipt']['metode_pembayaran'] ?? ''); ?></span>
+                        </div>
+
+                        <div class="receipt-divider"></div>
+
+                        <div class="text-center mt-3">
+                            <p>Terima kasih telah berbelanja</p>
+                            <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</p>
+                        </div>
+                    </div>
+
+                    <button id="printBtn" class="btn btn-print" onclick="printReceipt()" style="display: none;">
+                        <i class="bi bi-printer"></i> Cetak Struk
+                    </button>
+                </div>
+            </div>
+            <?php unset($_SESSION['receipt']); ?>
+        <?php endif; ?>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Fungsi untuk memilih produk
+            function selectProduct(id, harga, nama) {
+                document.getElementById('produk_id').value = id;
+                document.getElementById('selected_product').value = nama;
+                document.getElementById('harga_satuan').value = harga.toLocaleString('id-ID');
+
+                // Update tampilan produk terpilih
+                const productCards = document.querySelectorAll('.product-card');
                 productCards.forEach(card => {
                     card.classList.remove('selected');
                     if (parseInt(card.getAttribute('data-id')) === id) {
@@ -523,44 +575,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                     }
                 });
 
-            
-            hitungTotal();
-        }
-        
-        //eventListner untuk sync diskon
-        document.getElementById('diskon').addEventListener('input', function() {
-            syncDiskonToPercent();
-            hitungTotal();
-        });
-        document.getElementById('diskon_percent').addEventListener('input', function() {
-            syncPercentToDiskon();
-            hitungTotal();
-        });
-        document.getElementById('harga_satuan').addEventListener('input', hitungTotal);
-        document.getElementById('jumlah').addEventListener('input', hitungTotal);
 
-        function syncDiskonToPercent() {
-            const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
-            const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
-            const diskon = parseFloat(document.getElementById('diskon').value) || 0;
-            const subtotal = harga * jumlah;
+                hitungTotal();
+            }
 
-            const diskon_percent = subtotal > 0 ? (diskon / subtotal) * 100 : 0;
-            document.getElementById('diskon_percent').value = Math.round(diskon_percent);
-        }
+            //eventListner untuk sync diskon
+            document.getElementById('diskon').addEventListener('input', function () {
+                syncDiskonToPercent();
+                hitungTotal();
+            });
+            document.getElementById('diskon_percent').addEventListener('input', function () {
+                syncPercentToDiskon();
+                hitungTotal();
+            });
+            document.getElementById('harga_satuan').addEventListener('input', hitungTotal);
+            document.getElementById('jumlah').addEventListener('input', hitungTotal);
 
-        function syncPercentToDiskon() {
-            const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
-            const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
-            const diskon_percent = parseFloat(document.getElementById('diskon_percent').value) || 0;
-            const subtotal = harga * jumlah;
+            function syncDiskonToPercent() {
+                const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
+                const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+                const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+                const subtotal = harga * jumlah;
 
-            const diskon = (diskon_percent / 100) * subtotal;
-            document.getElementById('diskon').value = Math.round(diskon);
-        }
+                const diskon_percent = subtotal > 0 ? (diskon / subtotal) * 100 : 0;
+                document.getElementById('diskon_percent').value = Math.round(diskon_percent);
+            }
 
-        // Fungsi untuk menghitung total harga
-        function hitungTotal() {
+            function syncPercentToDiskon() {
+                const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
+                const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+                const diskon_percent = parseFloat(document.getElementById('diskon_percent').value) || 0;
+                const subtotal = harga * jumlah;
+
+                const diskon = (diskon_percent / 100) * subtotal;
+                document.getElementById('diskon').value = Math.round(diskon);
+            }
+
+            // Fungsi untuk menghitung total harga
+            function hitungTotal() {
                 const harga = parseFloat(document.getElementById('harga_satuan').value.replace(/\./g, '')) || 0;
                 const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
                 const subtotal = harga * jumlah;
@@ -568,40 +620,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
 
                 const total = subtotal - diskon;
                 document.getElementById('total_harga').value = total.toLocaleString('id-ID');
-            
-            hitungKembalian();
-        }
-        
-        // Fungsi untuk menghitung kembalian
-        function hitungKembalian() {
-            const total = parseFloat(document.getElementById('total_harga').value.replace(/\./g, '')) || 0;
-            const pembayaran = parseFloat(document.getElementById('pembayaran').value) || 0;
-            
-            const kembalian = pembayaran - total;
-            document.getElementById('kembalian').value = kembalian >= 0 ? kembalian.toLocaleString('id-ID') : '0';
-        }
-        
-        // Fungsi untuk menampilkan struk
-        function showReceipt() {
-            const receipt = document.getElementById('receiptContainer');
-            const printBtn = document.getElementById('printBtn');
-            
-            if (receipt.style.display === 'block') {
-                receipt.style.display = 'none';
-                printBtn.style.display = 'none';
-            } else {
-                receipt.style.display = 'block';
-                printBtn.style.display = 'inline-block';
+
+                hitungKembalian();
             }
-        }
-        
-        // Fungsi untuk mencetak struk
-        function printReceipt() {
-            const receiptContent = document.getElementById('receiptContainer').innerHTML;
-            const printWindow = window.open('', '', 'width=400,height=600');
-            
-            printWindow.document.open();
-            printWindow.document.write(`
+
+            // Fungsi untuk menghitung kembalian
+            function hitungKembalian() {
+                const total = parseFloat(document.getElementById('total_harga').value.replace(/\./g, '')) || 0;
+                const pembayaran = parseFloat(document.getElementById('pembayaran').value) || 0;
+
+                const kembalian = pembayaran - total;
+                document.getElementById('kembalian').value = kembalian >= 0 ? kembalian.toLocaleString('id-ID') : '0';
+            }
+
+            // Fungsi untuk menampilkan struk
+            function showReceipt() {
+                const receipt = document.getElementById('receiptContainer');
+                const printBtn = document.getElementById('printBtn');
+
+                if (receipt.style.display === 'block') {
+                    receipt.style.display = 'none';
+                    printBtn.style.display = 'none';
+                } else {
+                    receipt.style.display = 'block';
+                    printBtn.style.display = 'inline-block';
+                }
+            }
+
+            // Fungsi untuk mencetak struk
+            function printReceipt() {
+                const receiptContent = document.getElementById('receiptContainer').innerHTML;
+                const printWindow = window.open('', '', 'width=400,height=600');
+
+                printWindow.document.open();
+                printWindow.document.write(`
                 <html>
                     <head>
                         <title>Struk Pembelian</title>
@@ -630,46 +682,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                     </body>
                 </html>
             `);
-            printWindow.document.close();
-        }
-        
-        // Fungsi logout
-        function logout() {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.href = "../index.html";
+                printWindow.document.close();
             }
-        }
-        
-        // Inisialisasi saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pilih produk pertama secara default jika ada
-            const firstProduct = document.querySelector('.product-card');
-            if (firstProduct) {
-                const onclickAttr = firstProduct.getAttribute('onclick');
-                const matches = onclickAttr.match(/selectProduct\((\d+),\s*(\d+),\s*'([^']+)'/);
-                if (matches) {
-                    selectProduct(matches[1], matches[2], matches[3]);
+
+            // Fungsi logout
+            function logout() {
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    window.location.href = "../index.html";
                 }
             }
-        });
 
-        //clock real time
-        function updateClock() {
-            const now = new Date();
-            const options = {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: false
-            };
-            const formatted = now.toLocaleString('id-ID', options).replace(',', '');
-            document.getElementById('realtime-clock').textContent = formatted;
-        }
+            // Inisialisasi saat halaman dimuat
+            document.addEventListener('DOMContentLoaded', function () {
+                // Pilih produk pertama secara default jika ada
+                const firstProduct = document.querySelector('.product-card');
+                if (firstProduct) {
+                    const onclickAttr = firstProduct.getAttribute('onclick');
+                    const matches = onclickAttr.match(/selectProduct\((\d+),\s*(\d+),\s*'([^']+)'/);
+                    if (matches) {
+                        selectProduct(matches[1], matches[2], matches[3]);
+                    }
+                }
+            });
 
-        setInterval(updateClock, 1000); // Update every second
-        updateClock(); // Run once immediately
+            //clock real time
+            function updateClock() {
+                const now = new Date();
+                const options = {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: false
+                };
+                const formatted = now.toLocaleString('id-ID', options).replace(',', '');
+                document.getElementById('realtime-clock').textContent = formatted;
+            }
 
-    </script>
+            setInterval(updateClock, 1000); // Update every second
+            updateClock(); // Run once immediately
+
+
+            // Fungsi untuk memeriksa member
+
+            function checkMember() {
+                const phone = document.getElementById('phone').value;
+                if (!phone) return;
+
+                fetch(`check_member.php?phone=${phone}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "found") {
+                            document.getElementById('member_name').value = data.name;
+                            document.getElementById('total_spent').value = data.total_spent;
+                            document.getElementById('membership_level').value = data.level;
+                            document.getElementById('discount_value').value = data.discount;
+
+                            // Optional: Apply discount to total in your transaction logic
+                            alert(`Diskon ${data.discount}% diterapkan untuk ${data.level} member`);
+                        } else {
+                            document.getElementById('member_name').value = "Tidak ditemukan";
+                            document.getElementById('total_spent').value = "-";
+                            document.getElementById('membership_level').value = "-";
+                            document.getElementById('discount_value').value = 0;
+                            alert("Nomor tidak terdaftar sebagai member.");
+                        }
+                    });
+            }
+
+        </script>
 </body>
-</html>
+
+</html> 
