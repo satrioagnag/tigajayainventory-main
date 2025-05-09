@@ -94,6 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
     } else {
         $_SESSION['error'] = "Stok tidak mencukupi atau produk tidak ditemukan.";
     }
+    
     header("Location: transaksi.php");
     exit();
 }
@@ -443,8 +444,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                         <form method="POST" id="transaksiForm">
                             <div class="mb-3">
                                 <label class="form-label">Nomor HP</label>
-                                <input type="text" name="phone" id="phone" class="form-control" onblur="checkMember()"
-                                    placeholder="Masukkan nomor HP">
+                                <input type="text" name="phone" id="phone" class="form-control"
+                                    placeholder="Masukkan nomor HP" onblur="checkMember()">
                             </div>
 
                             <div class="mb-3">
@@ -729,7 +730,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                 const phone = document.getElementById('phone').value;
                 if (!phone) return;
 
-                fetch(`check_member.php?phone=${phone}`)
+                fetch(`../assets/check_member.php?phone=${phone}`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === "found") {
@@ -738,19 +739,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                             document.getElementById('membership_level').value = data.level;
                             document.getElementById('discount_value').value = data.discount;
 
-                            // Optional: Apply discount to total in your transaction logic
+                            // Auto-apply discount percent
+                            document.getElementById('diskon_percent').value = data.discount;
+                            syncPercentToDiskon();  // Convert to absolute discount
+                            hitungTotal(); // Recalculate total
+
                             alert(`Diskon ${data.discount}% diterapkan untuk ${data.level} member`);
                         } else {
                             document.getElementById('member_name').value = "Tidak ditemukan";
                             document.getElementById('total_spent').value = "-";
                             document.getElementById('membership_level').value = "-";
                             document.getElementById('discount_value').value = 0;
+
+                            // Reset discount fields
+                            document.getElementById('diskon').value = 0;
+                            document.getElementById('diskon_percent').value = 0;
+                            hitungTotal();
+
                             alert("Nomor tidak terdaftar sebagai member.");
                         }
+                    })
+                    .catch(error => {
+                        console.error("Fetch error:", error);
+                        alert("Terjadi kesalahan saat mengecek data member.");
                     });
             }
+
+            function updateCustomerMembership($phone, $paid_amount, $conn) {
+                // 1. Update total_spent
+                $sql = "UPDATE tbl_member SET total_spent = total_spent + ? WHERE phone = ?";
+                $stmt = $conn -> prepare($sql);
+                $points = floor($paid_amount / 10000);
+                $stmt -> bind_param("dii", $paid_amount, $phone);
+                $stmt -> execute();
+
+                // 2. Fetch new total to check membership level
+                $sql = "SELECT total_spent FROM tbl_member WHERE phone = ?";
+                $stmt = $conn -> prepare($sql);
+                $stmt -> bind_param("i", $phone);
+                $stmt -> execute();
+                $result = $stmt -> get_result() -> fetch_assoc();
+                $total = $result['total_spent'];
+
+                // 3. Determine new level
+                if ($total >= 5000000) {
+                    $level = 'Gold';
+                } elseif($total >= 1000000) {
+                    $level = 'Silver';
+                } else {
+                    $level = 'Regular';
+                }
+
+                // 4. Update level
+                $sql = "UPDATE tbl_member SET membership_level = ? WHERE phone = ?";
+                $stmt = $conn -> prepare($sql);
+                $stmt -> bind_param("si", $level, $phone);
+                $stmt -> execute();
+            }
+
 
         </script>
 </body>
 
-</html> 
+</html>
