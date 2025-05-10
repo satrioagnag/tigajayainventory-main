@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
     } else {
         $_SESSION['error'] = "Stok tidak mencukupi atau produk tidak ditemukan.";
     }
-    
+
     header("Location: transaksi.php");
     exit();
 }
@@ -527,9 +527,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                             <span><strong>Total:</strong></span>
                             <span><strong>Rp<?php echo number_format($_SESSION['receipt']['harga_total'] ?? 0, 0, ',', '.'); ?></strong></span>
                         </div>
-
                         <div class="receipt-divider"></div>
-
                         <div class="receipt-line">
                             <span>Tunai:</span>
                             <span>Rp<?php echo number_format($_SESSION['receipt']['pembayaran'] ?? 0, 0, ',', '.'); ?></span>
@@ -542,9 +540,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                             <span>Metode:</span>
                             <span><?php echo htmlspecialchars($_SESSION['receipt']['metode_pembayaran'] ?? ''); ?></span>
                         </div>
-
                         <div class="receipt-divider"></div>
-
                         <div class="text-center mt-3">
                             <p>Terima kasih telah berbelanja</p>
                             <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</p>
