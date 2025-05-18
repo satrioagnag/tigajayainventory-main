@@ -133,15 +133,15 @@ $result = $conn->query($query);
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <span class="nav-link text-white">
-                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Admin'); ?>
-                        </span>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="dashboard.php">
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <span class="nav-link text-white">
+                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Admin'); ?>
+                        </span>
+                    </li> 
                     <li class="nav-item">
                         <button class="btn btn-danger ms-2" onclick="logout()">
                             <i class="bi bi-box-arrow-right"></i> Logout
@@ -200,7 +200,7 @@ $result = $conn->query($query);
                             <label class="form-label">Nama Produk</label>
                             <input type="text" name="nama" class="form-control" required>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label">Merek</label>
                             <input type="text" name="merek" class="form-control" required>
                         </div>
@@ -227,7 +227,7 @@ $result = $conn->query($query);
                             <label class="form-label">Min. Stok</label>
                             <input type="number" name="min_stok" class="form-control" min="1" value="5">
                         </div>
-                        <div class="col-md-1 d-flex align-items-end">
+                        <div class="col-12 mt-3">
                             <button type="submit" name="add_product" class="btn btn-primary w-100">
                                 <i class="bi bi-save"></i> Simpan
                             </button>

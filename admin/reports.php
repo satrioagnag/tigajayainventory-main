@@ -160,15 +160,15 @@ while ($row = $result_chart->fetch_assoc()) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <span class="nav-link text-white">
                             <i class="bi bi-person-circle"></i>
                             <?php echo htmlspecialchars($_SESSION['nama'] ?? 'Admin'); ?>
                         </span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-danger ms-2" onclick="logout()">

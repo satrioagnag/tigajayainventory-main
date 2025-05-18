@@ -130,6 +130,11 @@ $stok_rendah = $conn->query($query_stok_rendah);
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="manage_member.php">
+                            <i class="bi bi-people"></i> Membership
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="reports.php">
                             <i class="bi bi-graph-up"></i> Laporan
                         </a>
