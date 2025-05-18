@@ -1,4 +1,7 @@
 <?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    error_log("POST data: " . print_r($_POST, true));
+}
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -39,11 +42,14 @@ $produk_result = $conn->query($produk_query);
 
 // Proses transaksi
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
+        error_log("ISI POST: " . print_r($_POST, true));
+    // Validasi input
     $produk_id = intval($_POST['produk_id']);
     $jumlah = intval($_POST['jumlah']);
     $diskon = floatval($_POST['diskon']);
     $pembayaran = floatval($_POST['pembayaran']);
     $metode_pembayaran = $conn->real_escape_string($_POST['metode_pembayaran']);
+    $phone = isset($_POST['phone']) ? $_POST['phone'] : "";
 
     // Ambil data produk
     $query = "SELECT nama, harga, stok FROM tbl_produk WHERE id = ?";
@@ -84,8 +90,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                 'kasir' => $_SESSION['nama'],
                 'tanggal' => date('d/m/Y H:i:s')
             ];
+            // Setelah insert transaksi berhasil
+            if (!empty($phone)) {
+                updateCustomerMembership($phone, $harga_total, $conn);
+            }
 
             $_SESSION['success'] = "Transaksi berhasil! Kembalian: Rp" . number_format($kembalian, 0, ',', '.');
+            echo '<pre>';
+print_r($_POST);
+echo '</pre>';
+
             header("Location: transaksi.php");
             exit();
         } else {
@@ -97,6 +111,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
 
     header("Location: transaksi.php");
     exit();
+}
+
+function updateCustomerMembership($phone, $harga_total, $conn)
+{
+        error_log("MASUK fungsi updateCustomerMembership, phone: $phone, total: $harga_total");
+
+    if (empty($phone)) {
+                error_log("Phone kosong");
+        return;
+    }
+    
+    // Prepare phone as string, not integer
+    $phone = (string)$phone;
+
+    // 1. Update total_spent
+    $sql = "UPDATE tbl_member SET total_spent = total_spent + ? WHERE phone = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ds", $harga_total, $phone);
+    $stmt->execute();
+
+        error_log("Baris yang diupdate: " . $stmt->affected_rows);
+
+
+    // Check if the update affected any rows
+    if ($stmt->affected_rows == 0) {
+        error_log("Tidak ada member dengan phone: $phone");
+        return;
+    }
+
+     // 2. Fetch new total to check membership level
+    $sql = "SELECT total_spent FROM tbl_member WHERE phone = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $phone); // Changed to string parameter
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows == 0) {
+        return; // No member found
+    }
+    
+    $row = $result->fetch_assoc();
+    $total = $row['total_spent'];
+
+    // 3. Determine new level
+    if ($total >= 5000000) {
+        $level = 'Gold';
+    } elseif ($total >= 1000000) {
+        $level = 'Silver';
+    } else {
+        $level = 'Regular';
+    }
+
+    // 4. Update level
+    $sql = "UPDATE tbl_member SET membership_level = ? WHERE phone = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $level, $phone);
+    $stmt->execute();
 }
 ?>
 
@@ -389,6 +460,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                                         <span class="input-group-text">%</span>
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                <label class="form-label">Nomor HP</label>
+                                <input type="text" name="phone" id="phone" class="form-control"
+                                    placeholder="Masukkan nomor HP" onblur="checkMember()">
+                            </div>
                                 <div>
                                     <label class="form-label">Metode Pembayaran</label>
                                     <select class="form-select" name="metode_pembayaran" required>
@@ -442,12 +518,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                     </div>
                     <div class="card-body">
                         <form method="POST" id="transaksiForm">
-                            <div class="mb-3">
-                                <label class="form-label">Nomor HP</label>
-                                <input type="text" name="phone" id="phone" class="form-control"
-                                    placeholder="Masukkan nomor HP" onblur="checkMember()">
-                            </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Nama Member</label>
                                 <input type="text" id="member_name" class="form-control" readonly>
@@ -761,37 +831,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['checkout'])) {
                     });
             }
 
-            function updateCustomerMembership($phone, $paid_amount, $conn) {
-                // 1. Update total_spent
-                $sql = "UPDATE tbl_member SET total_spent = total_spent + ? WHERE phone = ?";
-                $stmt = $conn -> prepare($sql);
-                $points = floor($paid_amount / 10000);
-                $stmt -> bind_param("dii", $paid_amount, $phone);
-                $stmt -> execute();
 
-                // 2. Fetch new total to check membership level
-                $sql = "SELECT total_spent FROM tbl_member WHERE phone = ?";
-                $stmt = $conn -> prepare($sql);
-                $stmt -> bind_param("i", $phone);
-                $stmt -> execute();
-                $result = $stmt -> get_result() -> fetch_assoc();
-                $total = $result['total_spent'];
-
-                // 3. Determine new level
-                if ($total >= 5000000) {
-                    $level = 'Gold';
-                } elseif($total >= 1000000) {
-                    $level = 'Silver';
-                } else {
-                    $level = 'Regular';
-                }
-
-                // 4. Update level
-                $sql = "UPDATE tbl_member SET membership_level = ? WHERE phone = ?";
-                $stmt = $conn -> prepare($sql);
-                $stmt -> bind_param("si", $level, $phone);
-                $stmt -> execute();
-            }
 
 
         </script>
